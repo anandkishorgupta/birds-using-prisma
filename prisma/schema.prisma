@@ -5,16 +5,14 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider   = "prisma-client"
+  output     = "../generated/prisma"
   engineType = "client"
 }
 
 datasource db {
   provider = "postgresql"
 }
-
-
 
 // ==============================
 // USERS
@@ -27,38 +25,38 @@ enum Role {
 }
 
 model User {
-  id        BigInt        @id @default(autoincrement()) // Primary key, auto increment
-  name      String                                    // User's name
-  email     String        @unique                     // Unique email
-  password  String                                    // Hashed password
-  phone     String?                                   // Optional phone
-  role      Role                                    // admin, moderator, hatchery_member, normal_user
-  createdAt DateTime      @default(now())             // Timestamp when created
-  updatedAt DateTime      @updatedAt                  // Auto-updated timestamp
+  id        BigInt   @id @default(autoincrement()) // Primary key, auto increment
+  name      String // User's name
+  email     String   @unique // Unique email
+  password  String // Hashed password
+  phone     String? // Optional phone
+  role      Role // admin, moderator, hatchery_member, normal_user
+  createdAt DateTime @default(now()) // Timestamp when created
+  updatedAt DateTime @updatedAt // Auto-updated timestamp
 
   // Relations
-  hatcheries    Hatchery[]      // One user can own multiple hatcheries
-  notifications Notification[]   // One user can have multiple notifications
+  hatcheries    Hatchery[] // One user can own multiple hatcheries
+  notifications Notification[] // One user can have multiple notifications
 }
 
 // ==============================
 // HATCHERIES
 // ==============================
 model Hatchery {
-  id                 BigInt        @id @default(autoincrement()) // Primary key
-  name               String                               // Hatchery name
-  location           String                               // Hatchery location
-  registrationNumber String        @unique                 // Unique registration number
-  ownerId            BigInt                                // Foreign key: owner user
-  renewalStatus      Boolean                               // true=active, false=inactive
-  yearEstablished    Int                                   // Year the hatchery was established
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  id                 BigInt   @id @default(autoincrement()) // Primary key
+  name               String // Hatchery name
+  location           String // Hatchery location
+  registrationNumber String   @unique // Unique registration number
+  ownerId            BigInt // Foreign key: owner user
+  renewalStatus      Boolean // true=active, false=inactive
+  yearEstablished    Int // Year the hatchery was established
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   // Relations
-  owner          User          @relation(fields: [ownerId], references: [id]) // Link to User
-  flocks         Flock[]       // Hatchery has multiple flocks
-  notifications  Notification[] // Hatchery has multiple notifications
+  owner         User           @relation(fields: [ownerId], references: [id]) // Link to User
+  flocks        Flock[] // Hatchery has multiple flocks
+  notifications Notification[] // Hatchery has multiple notifications
 }
 
 // ==============================
@@ -66,16 +64,16 @@ model Hatchery {
 // ==============================
 model Breed {
   id                 BigInt   @id @default(autoincrement()) // Primary key
-  name               String   @unique                        // Unique breed name
-  fertilityRate      Float                                  // Fertility %
-  infertilityRate    Float                                  // Infertility %
-  eggDamageRate      Float                                  // Egg damage %
-  hatchabilityRate   Float                                  // Hatchability %
-  healthyChickRate   Float                                  // Healthy chick %
-  unhealthyChickRate Float                                  // Unhealthy chick %
-  mortalityRate      Float                                  // Mortality %
-  healthyAdultRate   Float                                  // Healthy adult %
-  unhealthyAdultRate Float                                  // Unhealthy adult %
+  name               String   @unique // Unique breed name
+  fertilityRate      Float // Fertility %
+  infertilityRate    Float // Infertility %
+  eggDamageRate      Float // Egg damage %
+  hatchabilityRate   Float // Hatchability %
+  healthyChickRate   Float // Healthy chick %
+  unhealthyChickRate Float // Unhealthy chick %
+  mortalityRate      Float // Mortality %
+  healthyAdultRate   Float // Healthy adult %
+  unhealthyAdultRate Float // Unhealthy adult %
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
@@ -86,56 +84,97 @@ model Breed {
 // FLOCKS (EACH BATCH OF CHICKS / LIFECYCLE)
 // ==============================
 model Flock {
-  id             BigInt   @id @default(autoincrement()) // Primary key
-  hatcheryId     BigInt                              // Foreign key: Hatchery
-  breedId        BigInt                              // Foreign key: Breed
-  flockSize      Int                                 // Total chicks
-  maleChicks     Int                                 // Male chicks
-  femaleChicks   Int                                 // Female chicks
-  purpose        String                              // Broiler, Breeder, Layers, Mixed
-  source         String                              // imported or local
-  intakeDate     DateTime                            // Date chicks placed
-  dateOfShipment DateTime?                           // Optional shipment date
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id             BigInt    @id @default(autoincrement()) // Primary key
+  hatcheryId     BigInt // Foreign key: Hatchery
+  breedId        BigInt // Foreign key: Breed
+  flockSize      Int // Total chicks
+  maleChicks     Int // Male chicks
+  femaleChicks   Int // Female chicks
+  purpose        String // Broiler, Breeder, Layers, Mixed
+  source         String // imported or local
+  intakeDate     DateTime // Date chicks placed
+  dateOfShipment DateTime? // Optional shipment date
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   // Relations
-  hatchery        Hatchery    @relation(fields: [hatcheryId], references: [id]) // Link to Hatchery
-  breed           Breed       @relation(fields: [breedId], references: [id])    // Link to Breed
-  flockRecords    FlockRecord[]    // Weekly / post-maturity data
+  hatchery        Hatchery          @relation(fields: [hatcheryId], references: [id]) // Link to Hatchery
+  breed           Breed             @relation(fields: [breedId], references: [id]) // Link to Breed
+  // flockRecords    FlockRecord[]    // Weekly / post-maturity data
+  dailyProduction DailyProduction[]
+}
+
+// ============================== 
+// DAILY PRODUCTION DATA (CORE TABLE) 
+// ==============================
+model DailyProduction {
+  /// Primary key
+  id BigInt @id @default(autoincrement())
+
+  /// Foreign key → Flock
+  flockId BigInt
+
+  /// Date of production record (one entry per flock per day)
+  recordDate DateTime @db.Date
+
+  /// Egg production details
+  eggsCollected Int
+  fertileEggs   Int
+  infertileEggs Int
+  damagedEggs   Int
+
+  /// Chick production details
+  chicksHatched   Int
+  healthyChicks   Int
+  unhealthyChicks Int
+
+  /// Adult bird health tracking
+  deaths          Int
+  healthyAdults   Int
+  unhealthyAdults Int
+
+  /// Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Relations
+  flock Flock @relation(fields: [flockId], references: [id], onDelete: Cascade)
+
+  @@unique([flockId, recordDate])
+  @@index([flockId])
 }
 
 // ==============================
 // POST-MATURITY DATA COLLECTION (~20 weeks and beyond)
 // ==============================
-model FlockRecord {
-  id                   BigInt   @id @default(autoincrement()) // Primary key
-  flockId              BigInt                                 // Foreign key: Flock
-  week                 Int                                     // Week number
-  fertileEggCount      Int                                     // Count of fertile eggs
-  nonFertileEggCount   Int                                     // Count of non-fertile eggs
-  damagedEggCount      Int                                     // Count of damaged eggs
-  hatchabilityCount    Int                                     // Count hatched
-  healthyChickCount    Int
-  unhealthyChickCount  Int
-  mortalityCount       Int
-  healthyAdultCount    Int
-  unhealthyAdultCount  Int
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+// model FlockRecord {
+//   id                   BigInt   @id @default(autoincrement()) // Primary key
+//   flockId              BigInt                                 // Foreign key: Flock
+//   week                 Int                                     // Week number
+//   fertileEggCount      Int                                     // Count of fertile eggs
+//   nonFertileEggCount   Int                                     // Count of non-fertile eggs
+//   damagedEggCount      Int                                     // Count of damaged eggs
+//   hatchabilityCount    Int                                     // Count hatched
+//   healthyChickCount    Int
+//   unhealthyChickCount  Int
+//   mortalityCount       Int
+//   healthyAdultCount    Int
+//   unhealthyAdultCount  Int
+//   createdAt            DateTime @default(now())
+//   updatedAt            DateTime @updatedAt
 
-  // Relations
-  flock Flock @relation(fields: [flockId], references: [id])
-}
+//   // Relations
+//   flock Flock @relation(fields: [flockId], references: [id])
+// }
 
 // ==============================
 // NOTIFICATIONS
 // ==============================
 model Notification {
   id         BigInt   @id @default(autoincrement()) // Primary key
-  userId     BigInt                                 // Foreign key: User
-  hatcheryId BigInt                                 // Foreign key: Hatchery
-  type       String                                 // status_update, renewal_reminder, follow_up
+  userId     BigInt // Foreign key: User
+  hatcheryId BigInt // Foreign key: Hatchery
+  type       String // status_update, renewal_reminder, follow_up
   message    String
   isRead     Boolean  @default(false)
   createdAt  DateTime @default(now())
