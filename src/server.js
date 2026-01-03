@@ -5,6 +5,7 @@ import authRoutes from "./routes/auth.routes.js";
 import breedRoutes from "./routes/breed.routes.js";
 import flockRoutes from "./routes/flock.routes.js";
 import hatcheryRoutes from "./routes/hatchery.routes.js";
+import productionRoutes from "./routes/production.routes";
 
 
 
@@ -29,11 +30,13 @@ app.use("/api/auth", authRoutes);
 app.use("/api/breeds", breedRoutes);
 app.use("/api/hatcheries", hatcheryRoutes);
 app.use("/api/flocks", flockRoutes);
+app.use("/api/production", productionRoutes);
+
 
 app.get('/', (req, res) => {
-    res.send('Hello World!');
+  res.send('Hello World!');
 });
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`);
+  console.log(`Example app listening on port ${port}`);
 });
